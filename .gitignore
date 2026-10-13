@@ -1,49 +1,32 @@
-# Prerequisites
-*.d
+# Project specific
+/build/
+build/
+3rdparty/
 
-# Compiled Object files
-*.slo
-*.lo
+# Ignore contents of model and assets, but keep folders tracked via .gitkeep
+model/*
+!model/.gitkeep
+
+assets/*
+!assets/**/.gitkeep
+!assets/fixed/
+!assets/followed/
+assets/fixed/*
+!assets/fixed/.gitkeep
+assets/followed/*
+!assets/followed/.gitkeep
+
+# Compiled Object & Library files
 *.o
 *.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Linker files
-*.ilk
-
-# Debugger Files
-*.pdb
-
-# Compiled Dynamic libraries
 *.so
 *.dylib
 *.dll
-*.so.*
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
 *.a
 *.lib
-
-# Executables
 *.exe
-*.out
-*.app
 
-# Build directories
-build/
-Build/
-build-*/
-
-# CMake generated files
+# CMake & build outputs
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
@@ -51,18 +34,9 @@ Makefile
 install_manifest.txt
 compile_commands.json
 
-# Temporary files
+# Temporary & debug files
 *.tmp
 *.log
 *.bak
 *.swp
-
-# vcpkg
-vcpkg_installed/
-
-# debug information files
-*.dwo
-
-# test output & cache
-Testing/
 .cache/
