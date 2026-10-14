@@ -1,4 +1,4 @@
-﻿# ==============================================================================
+# ==============================================================================
 # Script: shell/build_and_run_windows.ps1
 # Description: Windows 10/11 下使用 MinGW-w64 一键编译本项目并运行模型推理测试
 # ==============================================================================
@@ -66,6 +66,19 @@ if (-not (Test-Path $opencvDir)) {
 }
 
 # 1. CMake 构建
+$cacheFile = Join-Path $BuildDir "CMakeCache.txt"
+if (Test-Path $cacheFile) {
+    $cachedLine = Get-Content $cacheFile | Where-Object { $_ -match "^maskrcnn_swins_inference_SOURCE_DIR:STATIC=(.*)$" }
+    if ($cachedLine) {
+        $cachedSrc = $matches[1].Trim()
+        if ($cachedSrc -ne $RepoRoot) {
+            Write-Host ">>> 检测到旧缓存路径与当前路径不匹配，自动清理旧构建缓存..." -ForegroundColor Yellow
+            Remove-Item -Path $cacheFile -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path (Join-Path $BuildDir "CMakeFiles") -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
 Write-Host ">>> 正在配置 CMake (MinGW Makefiles) ..." -ForegroundColor Yellow
 & cmake -S $RepoRoot -B $BuildDir -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
 if ($LASTEXITCODE -ne 0) {

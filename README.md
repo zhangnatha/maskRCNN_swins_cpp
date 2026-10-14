@@ -192,7 +192,7 @@ build/test_model_inference \
 build/test_model_inference model/model_followed_20260906.onnx model/followed.names assets/followed cpu build/pred_followed
 
 # fixed
-build/test_model_inference model/model_fixed_20260929.onnx model/fixed.names assets/fixed cpu build\pred_fixed
+build/test_model_inference model/model_fixed_20260929.onnx model/fixed.names assets/fixed cpu build/pred_fixed
 ```
 
 **Windows (PowerShell)**:

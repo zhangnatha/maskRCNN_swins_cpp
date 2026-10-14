@@ -12,7 +12,9 @@ if(UNIX)
     if(DEFINED ENV{CONDA_PREFIX})
         list(APPEND CMAKE_IGNORE_PATH "$ENV{CONDA_PREFIX}")
     endif()
-    list(APPEND CMAKE_IGNORE_PATH "/home/zja/anaconda3" "$ENV{HOME}/anaconda3" "$ENV{HOME}/miniconda3")
+    if(DEFINED ENV{HOME})
+        list(APPEND CMAKE_IGNORE_PATH "$ENV{HOME}/anaconda3" "$ENV{HOME}/miniconda3")
+    endif()
 endif()
 
 # ==============================================================================
@@ -99,18 +101,11 @@ target_link_libraries(test_model_inference PRIVATE
 
 if(UNIX)
     target_link_libraries(test_model_inference PRIVATE Threads::Threads)
-    # 设置 Linux 下的 RPATH，保证程序便携运行
-    get_filename_component(ORT_LIB_DIR "${ORT_LIB}" DIRECTORY)
-    find_library(CV_CORE_LIB NAMES opencv_core PATHS "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/opencv/lib" NO_DEFAULT_PATH)
-    if(CV_CORE_LIB)
-        get_filename_component(CV_LIB_DIR "${CV_CORE_LIB}" DIRECTORY)
-    else()
-        set(CV_LIB_DIR "")
-    endif()
+    # 设置 Linux 下纯相对路径的 RPATH ($ORIGIN)，不依赖任何绝对路径，实现完全跨机器可移植
     set_target_properties(test_model_inference PROPERTIES
         BUILD_WITH_INSTALL_RPATH TRUE
-        INSTALL_RPATH_USE_LINK_PATH TRUE
-        INSTALL_RPATH "$ORIGIN:${ORT_LIB_DIR}:${CV_LIB_DIR}"
+        INSTALL_RPATH_USE_LINK_PATH FALSE
+        INSTALL_RPATH "$ORIGIN:$ORIGIN/../3rdparty/opencv/lib:$ORIGIN/../3rdparty/onnxruntime/lib:$ORIGIN/../3rdparty/onnxruntime-cuda11-1.20.0/lib:$ORIGIN/../3rdparty/onnxruntime-linux-x64-1.20.0/lib"
     )
 endif()
 

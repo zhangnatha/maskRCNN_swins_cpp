@@ -25,6 +25,15 @@ echo "    推理设备: ${DEVICE}"
 echo "    数据集:   ${DATASET}"
 echo "================================================================================"
 
+# 若存在路径不匹配的旧 CMake 缓存，则自动清理
+if [[ -f "${BUILD_DIR}/CMakeCache.txt" ]]; then
+    CACHED_SRC=$(grep "maskrcnn_swins_inference_SOURCE_DIR:" "${BUILD_DIR}/CMakeCache.txt" 2>/dev/null | cut -d'=' -f2 || true)
+    if [[ -n "${CACHED_SRC}" && "${CACHED_SRC}" != "${REPO_ROOT}" ]]; then
+        echo ">>> 检测到旧缓存路径 (${CACHED_SRC}) 与当前仓库路径 (${REPO_ROOT}) 不匹配，自动清理旧构建缓存..."
+        rm -rf "${BUILD_DIR}/CMakeCache.txt" "${BUILD_DIR}/CMakeFiles"
+    fi
+fi
+
 # 检查 3rdparty 依赖
 if [[ ! -d "${REPO_ROOT}/3rdparty/opencv" ]]; then
     echo "警告: 未检测到 3rdparty/opencv，正在自动调用依赖编译脚本..."
@@ -35,6 +44,17 @@ cmake -B "${BUILD_DIR}" -S "${REPO_ROOT}" -DCMAKE_BUILD_TYPE=Release
 cmake --build "${BUILD_DIR}" -j"$(nproc || echo 4)"
 
 echo ">>> 编译完成！可执行程序: ${BUILD_DIR}/test_model_inference"
+
+# 若使用 GPU，支持通过 CUDA_HOME / CUDA_PATH 环境变量或标准系统路径加载 CUDA 运行库
+if [[ "${DEVICE}" == "gpu" ]]; then
+    if [[ -n "${CUDA_HOME:-}" && -d "${CUDA_HOME}/lib64" ]]; then
+        export LD_LIBRARY_PATH="${CUDA_HOME}/lib64:${LD_LIBRARY_PATH:-}"
+    elif [[ -n "${CUDA_PATH:-}" && -d "${CUDA_PATH}/lib64" ]]; then
+        export LD_LIBRARY_PATH="${CUDA_PATH}/lib64:${LD_LIBRARY_PATH:-}"
+    elif [[ -d "/usr/local/cuda/lib64" ]]; then
+        export LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH:-}"
+    fi
+fi
 
 # 运行推理测试
 if [[ "${DATASET}" == "fixed" ]]; then

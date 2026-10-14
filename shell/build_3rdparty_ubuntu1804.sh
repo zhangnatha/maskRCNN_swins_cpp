@@ -168,7 +168,7 @@ else
         -DWITH_GSTREAMER=OFF \
         -DWITH_1394=OFF \
         -DWITH_TBB=OFF \
-        "-DCMAKE_IGNORE_PATH=/home/zja/anaconda3;/home/zja/miniconda3"
+        "-DCMAKE_IGNORE_PATH=${HOME}/anaconda3;${HOME}/miniconda3"
 
     NUM_JOBS="$(nproc || echo 4)"
     echo ">>> 正在使用 ${NUM_JOBS} 线程编译 OpenCV ..."
@@ -190,6 +190,7 @@ fi
 
 if [[ -f "${ORT_TARGET_DIR}/lib/libonnxruntime.so" && "${FORCE_REBUILD}" -eq 0 ]]; then
     echo ">>> 检测到已存在的 ONNX Runtime: ${ORT_TARGET_DIR}，跳过下载 (使用 --force 可重新准备)。"
+    ln -sfn "$(basename "${ORT_TARGET_DIR}")" "${THIRDPARTY_DIR}/onnxruntime"
 else
     echo ">>> 准备 ONNX Runtime ${ORT_VERSION} (${ORT_PKG_NAME}) ..."
     ORT_TAR="${TMP_BUILD_DIR}/${ORT_PKG_NAME}.tgz"
@@ -210,6 +211,8 @@ else
         ln -sf "libonnxruntime.so.1" "libonnxruntime.so"
     fi
     popd >/dev/null
+
+    ln -sfn "$(basename "${ORT_TARGET_DIR}")" "${THIRDPARTY_DIR}/onnxruntime"
 
     echo ">>> ONNX Runtime 准备完成: ${ORT_TARGET_DIR}"
 fi
