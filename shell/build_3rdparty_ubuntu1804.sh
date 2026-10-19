@@ -217,9 +217,27 @@ else
     echo ">>> ONNX Runtime 准备完成: ${ORT_TARGET_DIR}"
 fi
 
+# ==============================================================================
+# 3. 检查 CUDA 运行时库支持 (GPU 模式)
+# ==============================================================================
+if [[ "${USE_ORT_GPU}" -eq 1 ]]; then
+    if [[ -d "${THIRDPARTY_DIR}/cuda11-runtime/lib" ]]; then
+        echo ">>> 检测到 3rdparty 已存在独立 CUDA 运行库: ${THIRDPARTY_DIR}/cuda11-runtime"
+        ln -sfn "cuda11-runtime" "${THIRDPARTY_DIR}/cuda-runtime"
+    elif [[ -d "${THIRDPARTY_DIR}/cuda-runtime/lib" ]]; then
+        echo ">>> 检测到 3rdparty 已存在独立 CUDA 运行库: ${THIRDPARTY_DIR}/cuda-runtime"
+        ln -sfn "cuda-runtime" "${THIRDPARTY_DIR}/cuda11-runtime"
+    else
+        echo ">>> 提示: 3rdparty 下未检测到独立 cuda-runtime，将依赖系统安装的 CUDA 运行环境。"
+    fi
+fi
+
 echo "================================================================================"
 echo ">>> 恭喜！3rdparty 依赖已全部就绪！"
 echo "    OpenCV: ${OPENCV_INSTALL_DIR}"
 echo "    ONNX Runtime: ${ORT_TARGET_DIR}"
+if [[ "${USE_ORT_GPU}" -eq 1 && -d "${THIRDPARTY_DIR}/cuda11-runtime/lib" ]]; then
+    echo "    CUDA Runtime: ${THIRDPARTY_DIR}/cuda11-runtime"
+fi
 echo "    可在仓库根目录执行: cmake -B build && cmake --build build"
 echo "================================================================================"

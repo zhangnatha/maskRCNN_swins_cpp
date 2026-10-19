@@ -45,8 +45,13 @@ cmake --build "${BUILD_DIR}" -j"$(nproc || echo 4)"
 
 echo ">>> 编译完成！可执行程序: ${BUILD_DIR}/test_model_inference"
 
-# 若使用 GPU，支持通过 CUDA_HOME / CUDA_PATH 环境变量或标准系统路径加载 CUDA 运行库
+# 若使用 GPU，支持通过 3rdparty/cuda11-runtime 或 CUDA_HOME / CUDA_PATH 环境变量 / 标准系统路径加载 CUDA 运行库
 if [[ "${DEVICE}" == "gpu" ]]; then
+    if [[ -d "${REPO_ROOT}/3rdparty/cuda11-runtime/lib" ]]; then
+        export LD_LIBRARY_PATH="${REPO_ROOT}/3rdparty/cuda11-runtime/lib:${LD_LIBRARY_PATH:-}"
+    elif [[ -d "${REPO_ROOT}/3rdparty/cuda-runtime/lib" ]]; then
+        export LD_LIBRARY_PATH="${REPO_ROOT}/3rdparty/cuda-runtime/lib:${LD_LIBRARY_PATH:-}"
+    fi
     if [[ -n "${CUDA_HOME:-}" && -d "${CUDA_HOME}/lib64" ]]; then
         export LD_LIBRARY_PATH="${CUDA_HOME}/lib64:${LD_LIBRARY_PATH:-}"
     elif [[ -n "${CUDA_PATH:-}" && -d "${CUDA_PATH}/lib64" ]]; then

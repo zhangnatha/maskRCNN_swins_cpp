@@ -44,6 +44,8 @@ message(STATUS "  Include dirs: ${OpenCV_INCLUDE_DIRS}")
 if(NOT ONNXRUNTIME_DIR)
     if(DEFINED ENV{ONNXRUNTIME_DIR})
         set(ONNXRUNTIME_DIR "$ENV{ONNXRUNTIME_DIR}")
+    elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/onnxruntime-cuda12-1.20.0")
+        set(ONNXRUNTIME_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/onnxruntime-cuda12-1.20.0")
     elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/onnxruntime-cuda11-1.20.0")
         set(ONNXRUNTIME_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/onnxruntime-cuda11-1.20.0")
     elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/onnxruntime-linux-x64-1.20.0")
@@ -105,8 +107,12 @@ if(UNIX)
     set_target_properties(test_model_inference PROPERTIES
         BUILD_WITH_INSTALL_RPATH TRUE
         INSTALL_RPATH_USE_LINK_PATH FALSE
-        INSTALL_RPATH "$ORIGIN:$ORIGIN/../3rdparty/opencv/lib:$ORIGIN/../3rdparty/onnxruntime/lib:$ORIGIN/../3rdparty/onnxruntime-cuda11-1.20.0/lib:$ORIGIN/../3rdparty/onnxruntime-linux-x64-1.20.0/lib"
+        INSTALL_RPATH "$ORIGIN:$ORIGIN/lib:$ORIGIN/../lib:$ORIGIN/../3rdparty/opencv/lib:$ORIGIN/../3rdparty/onnxruntime/lib:$ORIGIN/../3rdparty/onnxruntime-cuda11-1.20.0/lib:$ORIGIN/../3rdparty/onnxruntime-cuda12-1.20.0/lib:$ORIGIN/../3rdparty/onnxruntime-linux-x64-1.20.0/lib:$ORIGIN/../3rdparty/cuda11-runtime/lib:$ORIGIN/../3rdparty/cuda-runtime/lib:$ORIGIN/3rdparty/opencv/lib:$ORIGIN/3rdparty/onnxruntime/lib:$ORIGIN/3rdparty/onnxruntime-cuda11-1.20.0/lib:$ORIGIN/3rdparty/cuda11-runtime/lib:$ORIGIN/3rdparty/cuda-runtime/lib"
     )
+    # 二进制中的 DT_RUNPATH 不会被通过 dlopen 延迟加载的动态库继承；
+    # 通过禁用 new-dtags 使用传统 DT_RPATH，确保 CUDA provider 可以顺利解析 CUDA 11/cuDNN 8 依赖库。
+    set_property(TARGET test_model_inference APPEND_STRING PROPERTY
+        LINK_FLAGS " -Wl,--disable-new-dtags")
 endif()
 
 if(WIN32)
